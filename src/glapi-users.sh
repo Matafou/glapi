@@ -238,29 +238,29 @@ then
     then
         if [ "$EXACTNAME" = "yes" ];
            then
-               echo ICI
                iterpages $PAGES | jq --arg USERNAME \
                                      "$USERNAME" '.[] | select(.name==$USERNAME)';
         else # regexp case insensitive
             iterpages $PAGES | jq --arg USERNAME \
                                   "$USERNAME" '.[] | select(.name | test($USERNAME;"i"))';
         fi
-    else
-        if [ "$USERID" != "" ];
-        then # --argjson here --arg build a string
-            iterpages $PAGES | jq --argjson USERID $USERID '.[] | select(.id==$USERID)';
-        fi
+    else if [ "$USERID" != "" ];
+         then # --argjson here --arg build a string
+             iterpages $PAGES | jq --argjson USERID $USERID '.[] | select(.id==$USERID)';
+             
+         else if [ "$GROUP" = "" ];
+              then 
+                  COMMAND=iterpages
+              else
+                  COMMAND="showuserfromgrouppage $GROUP"
+              fi
+              $COMMAND $PAGES
+              exit 0;
+         fi
     fi
-    exit 0;
-fi
-
-
-# defaut glapi users command: list users, we iterate on pages
-if [ "$GROUP" = "" ];
-then 
-    COMMAND=iterpages
 else
-    COMMAND="showuserfromgrouppage $GROUP"
+    echo no command found
+    echo $USAGE
+    exit 1
 fi
-$COMMAND $PAGES
 
