@@ -12,13 +12,14 @@ GLAPISERVER shoud contain the http(s) address of the gitlab server.
 then you can do:
 
 ```bash
-glapi.sh <command>
+glapi.sh command
 ```
+
 
 ## USING the `glapi` alias:
 ### First define the alias!
 ```bash
-alias glapi="'GLAPITOKEN=<yourtoken> GLAPISERVER=<serveraddress> glapi.sh'"
+alias glapi='GLAPITOKEN=yourtoken GLAPISERVER=serveraddress glapi.sh'
 ```
 
 This part can be done using the glapi-env.sh script, for instance like this
@@ -32,7 +33,24 @@ glapi script
 
 ### Then use glapi:
 ```bash
-glapi <command>
+glapi command
 ```
 
+# How to use glapi?
 
+The three script `glapi-groups.sh` `glapi-users.sh` `glapi-utils.sh`
+can be called directly or via `glapi` (or `glapi.sh` if you did not
+define the alias above).
+
+For instance:
+
+```
+glapi users -group foo
+```
+
+will call `glapi-users.sh -group foo`, which displays all the users of group foo.
+
+To display the help of a command, use the `-h` option:
+```
+glapi users -h
+```
