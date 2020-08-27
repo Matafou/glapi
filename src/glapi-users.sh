@@ -23,7 +23,7 @@ EXACTNAME=
 USAGE="
 SYNTAX:
 [GLAPITOKEN=<token> GLAPISERVER=<url>] glapi-users.sh command
-glapi users command
+glapi users [options] command
 (see glapi-env.sh to use this second syntax)
 
 COMMANDS:

@@ -16,8 +16,8 @@ EXACTNAME=
 
 USAGE="
 SYNTAX:
-[GLAPITOKEN=<token> GLAPISERVER=<url>] glapi-groups.sh command
-glapi groups command
+[GLAPITOKEN=<token> GLAPISERVER=<url>] glapi-groups.sh [options] command
+glapi groups [options] command
 (see glapi-env.sh to use this second syntax)
 
 COMMANDS:

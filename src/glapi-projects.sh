@@ -24,8 +24,8 @@ PROJECTID=
 
 USAGE="
 SYNTAX:
-[GLAPITOKEN=<token> GLAPISERVER=<url>] glapi-projects.sh command
-glapi projects command
+[GLAPITOKEN=<token> GLAPISERVER=<url>] glapi-projects.sh [options] command
+glapi projects [options] command
 (see glapi-env.sh to use this second syntax)
 
 COMMANDS:
