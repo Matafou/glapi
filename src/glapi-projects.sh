@@ -152,7 +152,7 @@ set -- "${POSITIONAL[@]}" # restore positional parameters (i.e.
 
 OTHEROPTIONS=$*
 
-. $BINDIRECTORY/glapi-utils.sh
+. $BINDIRECTORY/glapi-functions.sh
 
 # Create a project named $1 inside group having groupID $2 (numerical id)
 function createProject () {
@@ -162,48 +162,11 @@ function createProject () {
     callcurl -X POST "$GLAPISERVER/projects?name=$PROJ_NAME&namespace_id=$GROUPID"
 }
 
-# this calls a command $1 times (with incremented page number)
-# it recieves an array of group descriptions
-function iterate () {
-    PAGE="$1"
-    shift
-    COMMAND="$*"
-    for i in $(seq 1 $PAGE); do
-        $COMMAND $i
-        echo
-        # we flatten the different pages FIXME; there are repetitions
-        # (only when listing groups, not users)
-    done | jq -c -s 'flatten'
-
-}
-
-function listProjectsInGroup () {
-    if [ -z $1 ];
-    then
-        echo I need a group name
-    else
-        GROUP=$1
-        PAGE=$2
-        # this return the information about the group
-        callcurlsilent "$GLAPISERVER/groups/$GROUP"
-        # we return the "projects" field only
-    fi | jq '.projects'
-}
-
-
-function listProjectsInAll () {
-    PAGE=$1
-    shift
-    callcurlsilent "$GLAPISERVER/projects?page=$PAGE&per_page=100"
-}
-
-
 function addMemberToProjectById () {
     USERID="$1"
     PROJECTNAME="$2"
     callcurl --request POST --data "user_id=$USERID&access_level=40" "$GLAPISERVER/projects/$PROJECTNAME/members" 2>&1
 }
-
 
 
 if VERBOSE=$VERBOSE GLAPITOKEN=$GLAPITOKEN GLAPISERVER=$GLAPISERVER glapi-testserver.sh ;

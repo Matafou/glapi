@@ -126,65 +126,8 @@ set -- "${POSITIONAL[@]}" # restore positional parameters (i.e.
 
 OTHEROPTIONS=$*
 
-. $BINDIRECTORY/glapi-utils.sh
+. $BINDIRECTORY/glapi-functions.sh
 
-# TODO: calculer les nombre de pages nécessaire
-# FIXME: gitlab v3 ne retourne pas de bon header quand on fait
-# curl --head  --header "PRIVATE-TOKEN: $GLAPITOKEN" "$GLAPISERVER/users?per_page=100&page=1
-# donc pour l'instant on fait 9 pages et ça suffit largement
-# (septembre 2019 il t a 400 utilisateurs et des poussières.
-
-
-function showuserpage () {
-    PAGE=$1
-    callcurlsilent "$GLAPISERVER/users?per_page=100&page=$PAGE"
-}
-
-
-function iteruserpages () {
-    PAGE=$1
-    COMMAND=showuserpage
-    for i in $(seq 1 $PAGE); do
-        $COMMAND $i
-        echo
-        # TODO: is there duplicates?
-    done  | jq -s "flatten"
-}
-
-function itergroupepages () {
-    PAGE=$1
-    GROUP=$2
-    COMMAND=showuserfromgrouppage
-    for i in $(seq 1 $PAGE); do
-        $COMMAND $GROUP $i
-        echo
-        # TODO: is there duplicates?
-    done  | jq -s "flatten"
-}
-
-
-function showgrouppage () {
-    PAGE=$1
-    callcurlsilent "$GLAPISERVER/groups?per_page=100&page=$PAGE"
-}
-
-function iterpages () {
-    PAGE=$1
-    COMMAND=showgrouppage
-    for i in $(seq 1 $PAGE); do
-        $COMMAND $i
-        echo
-        # we remove duplicates coming from reaching the last page
-    done | jq -s "flatten"    
-}
-
-# looks for the user id of username $1. The username must be exact.
-# FIXME: This is also defined in glapi-users.sh, which is bad.
-function findUserId () {
-    # $1: username
-    # result: userid 
-    iteruserpages $PAGES | jq --arg USERNAME $1 '.[] | select(.username==$USERNAME)' | jq '.id'
-}
 
 function addMemberToGroupById () {
     THEUSERID="$1"

@@ -175,29 +175,7 @@ set -- "${POSITIONAL[@]}" # restore positional parameters (i.e.
 OTHEROPTIONS=$*
 # TODO: check for unkniwn option
 
-. $BINDIRECTORY/glapi-utils.sh
-
-
-# requête pour lister les utilisateur + ajout d'un saut de ligne entre
-# chaque utilisateur donc on peut faire grep dessus, de préférence en
-# mettant tout en minuscule avant pour éviter de rater des
-# utilisateurs.
-# TODO: calculer les nombre de pages nécessaire
-# FIXME: gitlab v3 ne retourne pas de bon header quand on fait
-# curl --head  --header "PRIVATE-TOKEN: $GLAPITOKEN" "$GLAPISERVER/users?per_page=100&page=1
-# donc pour l'instant on fait 9 pages et ça suffit largement
-# (septembre 2019 il t a 400 utilisateurs et des poussières.
-
-function showuserpage () {
-    PAGE=$1
-    callcurlsilent "$GLAPISERVER/users?per_page=100&page=$PAGE"
-}
-
-function showuserfromgrouppage () {
-    PAGE=$2
-    THEGROUP=$1
-    callcurlsilent "$GLAPISERVER/groups/$THEGROUP/members?per_page=100&page=$PAGE" | jq '.'
-}
+. $BINDIRECTORY/glapi-functions.sh
 
 function addUtilisateur () {
     NAME=$1
@@ -208,36 +186,12 @@ function addUtilisateur () {
     callcurlsilent --request POST "$GLAPISERVER/users?email=$MAIL&username=$LOGIN&password=$PASSWD&name=$NAME"
 }
 
-
-function iterpages () {
-    PAGE=$1
-    COMMAND=showuserpage
-    for i in $(seq 1 $PAGE); do
-        $COMMAND $i
-        echo
-        # TODO: is there duplicates?
-    done  | jq -s "flatten"
-}
-
-function itergroupepages () {
-    PAGE=$1
-    GROUP=$2
-    COMMAND=showuserfromgrouppage
-    for i in $(seq 1 $PAGE); do
-        $COMMAND $GROUP $i
-        echo
-        # TODO: is there duplicates?
-    done  | jq -s "flatten"
-}
-
-
 # looks for the user id of username $1. The username must be exact.
 function findUserId () {
     # $1: username
     # result: userid 
     iterpages $PAGES | jq --arg USERNAME $1 '.[] | select(.username==$USERNAME)' | jq '.id'
 }
-
 
 
 if VERBOSE=$VERBOSE GLAPITOKEN=$GLAPITOKEN GLAPISERVER=$GLAPISERVER glapi-testserver.sh ;
