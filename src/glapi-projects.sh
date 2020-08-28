@@ -198,7 +198,7 @@ function listProjectsInAll () {
 }
 
 
-function addMemberToGroupeById () {
+function addMemberToProjectById () {
     USERID="$1"
     PROJECTNAME="$2"
     callcurl --request POST --data "user_id=$USERID&access_level=40" "$GLAPISERVER/projects/$PROJECTNAME/members" 2>&1
@@ -221,7 +221,7 @@ fi
 
 if [ "$ADDUSER" != "" ] ;
 then
-    addMemberToGroupeById $USERID $PROJECTNAME ;
+    addMemberToProjectById $USERID $PROJECTNAME ;
     exit
 fi
 

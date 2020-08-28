@@ -23,7 +23,7 @@ EXACTNAME=
 USAGE="
 SYNTAX:
 [GLAPITOKEN=<token> GLAPISERVER=<url>] glapi-users.sh command
-glapi users [options] command
+glapi users [options] command [command options]
 (see glapi-env.sh to use this second syntax)
 
 COMMANDS:
@@ -41,6 +41,12 @@ OPTIONS FOR SEARCH:
   -id <id>
   -exact the search will be an exact search instead of regexp case
          insensitive matching.
+
+EXAMPLE:
+  glapi users -h
+  glapi users -n add toto titi tutu tata
+  glapi users -v search -name foo
+  
 "
 
 
@@ -64,6 +70,13 @@ case $key in
         ;;
     search)
         SEARCH=yes
+        shift
+        ;;
+    # TODO: accept -name, -login etc
+    searchid)
+        SEARCHID=yes
+        USERNAME=$2
+        shift
         shift
         ;;
     *) # not a command, we delay interpretation.
@@ -218,6 +231,15 @@ function itergroupepages () {
 }
 
 
+# looks for the user id of username $1. The username must be exact.
+function findUserId () {
+    # $1: username
+    # result: userid 
+    iterpages $PAGES | jq --arg USERNAME $1 '.[] | select(.username==$USERNAME)' | jq '.id'
+}
+
+
+
 if VERBOSE=$VERBOSE GLAPITOKEN=$GLAPITOKEN GLAPISERVER=$GLAPISERVER glapi-testserver.sh ;
 then echo -n;
 else exit $?;
@@ -259,8 +281,17 @@ then
          fi
     fi
 else
-    echo no command found
-    echo $USAGE
-    exit 1
+    if [ "$SEARCHID" = "yes" ];
+    then
+         if [ "$USERNAME" != "" ];
+         then
+             echo $(findUserId $USERNAME)
+         else echo "Error: empty username"
+              exit 1
+         fi
+    else
+        echo no command found
+        echo $USAGE
+        exit 1
+    fi
 fi
-

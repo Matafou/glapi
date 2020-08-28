@@ -14,6 +14,9 @@ GROUPNAME=
 GROUPID=
 EXACTNAME=
 
+ADDTOGROUP=
+USERID=
+
 USAGE="
 SYNTAX:
 [GLAPITOKEN=<token> GLAPISERVER=<url>] glapi-groups.sh [options] command
@@ -47,6 +50,19 @@ key="$1"
 case $key in
     search)
         SEARCH=yes
+        shift
+        ;;
+    adduser)
+        ADDTOGROUP=yes
+        USERID="$2"
+        shift
+        shift
+        ;;
+    adduserbyname)
+        ADDTOGROUP=yes
+        USERNAME="$2"
+        echo BY NAME!!!
+        shift
         shift
         ;;
     *)    # unknown option
@@ -118,6 +134,35 @@ OTHEROPTIONS=$*
 # donc pour l'instant on fait 9 pages et ça suffit largement
 # (septembre 2019 il t a 400 utilisateurs et des poussières.
 
+
+function showuserpage () {
+    PAGE=$1
+    callcurlsilent "$GLAPISERVER/users?per_page=100&page=$PAGE"
+}
+
+
+function iteruserpages () {
+    PAGE=$1
+    COMMAND=showuserpage
+    for i in $(seq 1 $PAGE); do
+        $COMMAND $i
+        echo
+        # TODO: is there duplicates?
+    done  | jq -s "flatten"
+}
+
+function itergroupepages () {
+    PAGE=$1
+    GROUP=$2
+    COMMAND=showuserfromgrouppage
+    for i in $(seq 1 $PAGE); do
+        $COMMAND $GROUP $i
+        echo
+        # TODO: is there duplicates?
+    done  | jq -s "flatten"
+}
+
+
 function showgrouppage () {
     PAGE=$1
     callcurlsilent "$GLAPISERVER/groups?per_page=100&page=$PAGE"
@@ -131,6 +176,27 @@ function iterpages () {
         echo
         # we remove duplicates coming from reaching the last page
     done | jq -s "flatten"    
+}
+
+# looks for the user id of username $1. The username must be exact.
+# FIXME: This is also defined in glapi-users.sh, which is bad.
+function findUserId () {
+    # $1: username
+    # result: userid 
+    iteruserpages $PAGES | jq --arg USERNAME $1 '.[] | select(.username==$USERNAME)' | jq '.id'
+}
+
+function addMemberToGroupById () {
+    THEUSERID="$1"
+    THEGROUPNAME="$2"
+    callcurlsilent --request POST --data "user_id=$THEUSERID&access_level=30" "$GLAPISERVER/groups/$THEGROUPNAME/members" 2>&1
+}
+
+function addMemberToGroupByName () {
+    THEUSERNAME="$1"
+    THEGROUPNAME="$2"
+    USERID=$(findUserId $1)
+    addMemberToGroupById $USERID $THEGROUPNAME
 }
 
 
@@ -160,9 +226,33 @@ then
 fi
 
 if [ "$PRINTUNAMES" = "yes" ] ;
+then
    iterpages $PAGES
+   exit 0
+else echo ;
 fi
 
-
+echo $ADDTOGROUP
+echo $GROUPNAME
+if [ "$ADDTOGROUP" = "yes" ] ;
+then
+    if [ "$GROUPNAME" != "" ];
+    then
+        if [[ "$USERID" == "" && "$USERNAME" != "" ]]
+        then
+            USERID=$(findUserId $USERNAME)
+        fi
+        echo -n "About to add user $USERID in group $GROUPNAME with access level 30. "
+        if confirm ;
+        then addMemberToGroupById $USERID $GROUPNAME
+        else 
+            echo aborting
+            exit;
+        fi
+    else
+        echo ERROR: empty group name
+        exit 1;
+    fi
+fi
 echo
 

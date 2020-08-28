@@ -2,7 +2,8 @@
 
 # This is to be sourced only, it contains useful functino for glapi commands.
 
-
+# to call this without really sending the request:
+#   DRYRUN=yes addMemberToGroupById $USERID $GROUPNAME
 function callcurl () {
     if [ "$VERBOSE" = "yes" -o "$DRYRUN" != "" ] ;
     then
@@ -86,8 +87,7 @@ function filter-field-numeric () {
     $* | grep -i "\"$FLD\":$STR[,}]"
 }
 
-
-# I would like jq to print itself when DRYRIN is set (instead of
+# I would like jq to print itself when DRYRUN is set (instead of
 # running), but jq is so dependent on the syntax of its arguments that
 # I did not manage to define gjq.
 function gjq () {
@@ -99,5 +99,24 @@ function gjq () {
     if [ "$DRYRUN" = "" ] ;
     then jq $*
     else echo jq ${quoted_args} ;
+    fi
+}
+
+# query user for confirmation. Example of use:
+# if confirm ;
+#         then echo will do
+#         else 
+#             echo aborting
+#             exit;
+#         fi
+function confirm () {
+    read -p "Are you sure? " -n 1 -r ANSWER
+    echo  # (optional) move to a new line
+    echo " You answered $ANSWER"
+    if [[ $ANSWER =~ ^[Yy]$ ]]
+    then
+        return 0
+    else
+        return 1;
     fi
 }
