@@ -28,7 +28,8 @@ glapi users [options] command [command options]
 
 COMMANDS:
 - add <username> <userlogin> <usermail> <passwd>
-- search <options for search>
+- search <options for search> echoes information about users
+- searchid <loginname>  echoes the id of user with login <loginname>
 
 OPTIONS:
   -h show help
@@ -46,6 +47,7 @@ EXAMPLE:
   glapi users -h
   glapi users -n add toto titi tutu tata
   glapi users -v search -name foo
+  glapi users -v searchid foo
   
 "
 

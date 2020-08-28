@@ -28,19 +28,26 @@ COMMANDS:
 - search <options for search> prints the json description of the
                               corresponding groups
 
+- adduser <id> <groupname>   adds user with id <id> in group <groupname>
+- adduserbyname <userlogin> -name <groupname>   adds user with login name <userlogin>
+    in group <groupname>
+
 OPTIONS:
   -h show help
-  -v verbose mode
-  -n dry run, show the curl query, do not execute it. NOT APPLICABLE
-     TO SEARCH command
 
 OPTIONS FOR SEARCH:
   -name <name> look for the name <name>
   -id <id>     look fir the id <id>
   -exact the search will be an exact search instead of regexp case
          insensitive matching.
+
+EXAMPLES:
+   adduserbyname foo -name group_bar
+      adds user with login name foo to group named group_bar
 "
 
+# TODO: verbose + dryrun
+# TODO: ask for confirmation when about to send possibly harmful queries
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -61,7 +68,6 @@ case $key in
     adduserbyname)
         ADDTOGROUP=yes
         USERNAME="$2"
-        echo BY NAME!!!
         shift
         shift
         ;;
@@ -175,8 +181,6 @@ then
 else echo ;
 fi
 
-echo $ADDTOGROUP
-echo $GROUPNAME
 if [ "$ADDTOGROUP" = "yes" ] ;
 then
     if [ "$GROUPNAME" != "" ];
