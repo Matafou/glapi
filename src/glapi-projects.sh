@@ -68,8 +68,20 @@ case $key in
         PROJECTNAME="$1"
         shift
         ;;
+    adduserbyname)
+        ADDUSERBYNAME=yes
+        shift
+        USERNAME="$1"
+        shift
+        PROJECTNAME="$1"
+        shift
+        ;;
     search)
         SEARCH=yes
+        shift
+        ;;
+    searchid)
+        SEARCHID=yes
         shift
         ;;
     *)    # unknown option
@@ -165,7 +177,16 @@ function createProject () {
 function addMemberToProjectById () {
     USERID="$1"
     PROJECTNAME="$2"
-    callcurl --request POST --data "user_id=$USERID&access_level=40" "$GLAPISERVER/projects/$PROJECTNAME/members" 2>&1
+    PROJECTID=$(DRYRUN="" findProjectId $PROJECTNAME)
+    callcurl --request POST --data "user_id=$USERID&access_level=40" "$GLAPISERVER/projects/$PROJECTID/members" 2>&1
+}
+
+function addMemberToProjectByName () {
+    THEUSERNAME="$1"
+    PROJECTNAME="$2"
+    # cancel dryrun just for this search, so that we get a good id
+    THEUSERID=$(DRYRUN="" findUserId $1)
+    addMemberToProjectById $THEUSERID $PROJECTNAME
 }
 
 
@@ -186,6 +207,28 @@ if [ "$ADDUSER" != "" ] ;
 then
     addMemberToProjectById $USERID $PROJECTNAME ;
     exit
+fi
+
+
+# We need a group name if the project is in a group, otherwise the url
+# is not correct
+if [ "$ADDUSERBYNAME" != "" ] ;
+then
+    addMemberToProjectByName $USERNAME $PROJECTNAME ;
+    exit
+fi
+
+# Needs exact name
+if [ "$SEARCHID" != "" ] ;
+then
+    if [ "$PROJECTNAME" != "" ] ;
+    then
+        echo $(findProjectId $PROJECTNAME)
+        exit;
+    else
+        echo empty project name
+        exit 0
+    fi
 fi
 
 # when asking for the decription of a group, all projects of the group

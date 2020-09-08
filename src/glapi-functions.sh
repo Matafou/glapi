@@ -96,6 +96,17 @@ function itergroupspages () {
     done | jq -s "flatten"    
 }
 
+# iter dans la liste des projet
+function iterprojectsspages () {
+    PAGE=$1
+    COMMAND=showprojectspage
+    for i in $(seq 1 $PAGE); do
+        $COMMAND $i
+        echo
+        # we remove duplicates coming from reaching the last page
+    done | jq -s "flatten"    
+}
+
 # generic version
 # TODO: replace all previous iterxxx by this one.
 # this calls a command $1 times (with incremented page number)
@@ -118,4 +129,22 @@ function findUserId () {
     # $1: username
     # result: userid 
     iterpages $PAGES | jq --arg USERNAME $1 '.[] | select(.username==$USERNAME)' | jq '.id'
+}
+
+# looks for the user id of username $1. The username must be exact.
+# FIXME: This is also defined in glapi-users.sh, which is bad.
+function findGroupId () {
+    # $1: group name
+    # result: groupid 
+    itergroupspages $PAGES | jq --arg GROUPNAME $1 '.[] | select(.name==$GROUPNAME)' | jq '.id'
+}
+
+
+
+# looks for the project of name exactly $1 and return its id. The name must be exact.
+function findProjectId () {
+    # $1: project name
+    # result: projectid 
+    iterate $PAGES listProjectsInAll \
+        | jq --arg PROJECTNAME "$PROJECTNAME" '.[] | select(.name==$PROJECTNAME)' | jq '.id'
 }

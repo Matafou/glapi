@@ -59,6 +59,10 @@ case $key in
         SEARCH=yes
         shift
         ;;
+    searchid)
+        SEARCHID=yes
+        shift
+        ;;
     adduser)
         ADDTOGROUP=yes
         USERID="$2"
@@ -144,7 +148,8 @@ function addMemberToGroupById () {
 function addMemberToGroupByName () {
     THEUSERNAME="$1"
     THEGROUPNAME="$2"
-    USERID=$(findUserId $1)
+    # cancel dryrun just for this search, so that we get a good id
+    USERID=$(DRYRUN="" findUserId $1)
     addMemberToGroupById $USERID $THEGROUPNAME
 }
 
@@ -155,6 +160,18 @@ then echo -n;
 else exit $?;
 fi 
 
+if [ "$SEARCHID" = "yes" ];
+then
+    echo groupname = $GROUPNAME
+    if [ "$GROUPNAME" != "" ];
+    then
+        echo $(findGroupId $GROUPNAME)
+    else
+        echo empty group name
+        exit 0;
+    fi
+fi
+
 if [ "$SEARCH" = "yes" ];
 then
     if [ "$GROUPNAME" != "" ];
@@ -164,11 +181,11 @@ then
             iterpages $PAGES | jq --arg GROUPNAME \
                                   "$GROUPNAME" '.[] | select(.name==$GROUPNAME)';
         else # regexp case insensitive
-            iterpages $PAGES | jq --arg GROUPNAME "$GROUPNAME" '.[] | select(.name | test($GROUPNAME;"i"))';
+            itergroupspages $PAGES | jq --arg GROUPNAME "$GROUPNAME" '.[] | select(.name | test($GROUPNAME;"i"))';
         fi
     else
         if [ "$GROUPID" != "" ];
-        then iterpages $PAGES | jq --argjson GROUPID $GROUPID '.[] | select(.id==$GROUPID)';
+        then itergroupspages $PAGES | jq --argjson GROUPID $GROUPID '.[] | select(.id==$GROUPID)';
         fi
     fi
     exit 0;

@@ -188,13 +188,6 @@ function addUtilisateur () {
     callcurlsilent --request POST "$GLAPISERVER/users?email=$MAIL&username=$LOGIN&password=$PASSWD&name=$NAME"
 }
 
-# looks for the user id of username $1. The username must be exact.
-function findUserId () {
-    # $1: username
-    # result: userid 
-    iterpages $PAGES | jq --arg USERNAME $1 '.[] | select(.username==$USERNAME)' | jq '.id'
-}
-
 
 if VERBOSE=$VERBOSE GLAPITOKEN=$GLAPITOKEN GLAPISERVER=$GLAPISERVER glapi-testserver.sh ;
 then echo -n;
