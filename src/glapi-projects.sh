@@ -13,7 +13,7 @@ PROJECTNAME=
 
 ADDUSER=
 USERID=
-
+LISTMEMBERS=
 SEARCH=
 EXACTNAME=
 GROUPID=
@@ -82,6 +82,10 @@ case $key in
         ;;
     searchid)
         SEARCHID=yes
+        shift
+        ;;
+    listmembers)
+        LISTMEMBERS=yes
         shift
         ;;
     *)    # unknown option
@@ -218,6 +222,12 @@ then
     exit
 fi
 
+if [ "$LISTMEMBERS" != "" -a "$PROJECTID" != "" ] ;
+then
+    callcurlsilent $GLAPISERVER/projects/$PROJECTID/members
+    exit
+fi
+
 # Needs exact name
 if [ "$SEARCHID" != "" ] ;
 then
@@ -236,6 +246,12 @@ fi
 
 if [ "$SEARCH" != "" ] ;
 then
+    if [ "$PROJECTID" != "" ] ;
+    then
+        callcurlsilent $GLAPISERVER/projects/$PROJECTID ;
+        exit
+    fi
+
     if [ "$GROUPNAME" = "" -a "$PROJECTNAME" = "" ] ;
     then
         iterate $PAGES listProjectsInAll
