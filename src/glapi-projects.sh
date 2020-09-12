@@ -13,7 +13,7 @@ PROJECTNAME=
 
 ADDUSER=
 USERID=
-
+LISTMEMBERS=
 SEARCH=
 LISTMEMBERS=
 EXACTNAME=
@@ -234,6 +234,12 @@ then
     exit
 fi
 
+if [ "$LISTMEMBERS" != "" -a "$PROJECTID" != "" ] ;
+then
+    callcurlsilent $GLAPISERVER/projects/$PROJECTID/members
+    exit
+fi
+
 # Needs exact name
 if [ "$SEARCHID" != "" ] ;
 then
@@ -268,7 +274,7 @@ fi
 
 # when asking for the decription of a group, all projects of the group
 # are displayed, there is no page/per_page flag.
-
+# TODO, determine what to do when too much names/ids are given.
 if [ "$SEARCH" != "" ] ;
 then
     if [ "$PROJECTID" != "" ] ;
