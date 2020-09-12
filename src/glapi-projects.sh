@@ -15,6 +15,7 @@ ADDUSER=
 USERID=
 
 SEARCH=
+LISTMEMBERS=
 EXACTNAME=
 GROUPID=
 GROUPNAME=
@@ -82,6 +83,10 @@ case $key in
         ;;
     searchid)
         SEARCHID=yes
+        shift
+        ;;
+    listmembers)
+        LISTMEMBERS=yes
         shift
         ;;
     *)    # unknown option
@@ -189,6 +194,17 @@ function addMemberToProjectByName () {
     addMemberToProjectById $THEUSERID $PROJECTNAME
 }
 
+function listMembers () {
+    PROJECTID="$1"
+    callcurlsilent "$GLAPISERVER/projects/$PROJECTID/members" 2>&1
+}
+
+function listMembersByName () {
+    PROJECTNAME="$1"
+    PROJECTID=$(DRYRUN="" findProjectId $PROJECTNAME)
+    listMembers $PROJECTID
+}
+
 
 if VERBOSE=$VERBOSE GLAPITOKEN=$GLAPITOKEN GLAPISERVER=$GLAPISERVER glapi-testserver.sh ;
 then echo -n;
@@ -231,12 +247,36 @@ then
     fi
 fi
 
+# Needs exact name
+if [ "$LISTMEMBERS" != "" ] ;
+then
+    if [ "$PROJECTNAME" != "" ] ;
+    then
+        echo $(listMembersByName $PROJECTNAME)
+        exit;
+    else
+        if [ "$PROJECTID" != "" ] ;
+        then
+            echo $(listMembers $PROJECTID)
+            exit;
+        else
+            echo empty project name
+            exit 0
+        fi
+    fi
+fi
+
 # when asking for the decription of a group, all projects of the group
 # are displayed, there is no page/per_page flag.
 
 if [ "$SEARCH" != "" ] ;
 then
-    if [ "$GROUPNAME" = "" -a "$PROJECTNAME" = "" ] ;
+    if [ "$PROJECTID" != "" ] ;
+    then
+        callcurlsilent $GLAPISERVER/projects/$PROJECTID | jq -r '.'
+        exit
+    fi
+    if [ "$GROUPNAME" = "" -a "$PROJECTNAME" = "" -a "$PROJECTID" = "" ] ;
     then
         iterate $PAGES listProjectsInAll
         exit
