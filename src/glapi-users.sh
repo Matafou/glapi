@@ -29,7 +29,7 @@ glapi users [options] command [command options]
 COMMANDS:
 - add <username> <userlogin> <usermail> <passwd>
 - search <options for search> echoes information about users
-- searchid <loginname>  echoes the id of user with login <loginname>
+- searchid <options for search>  echoes the id of user with login <loginname>
 - help  show help
 
 OPTIONS:
@@ -75,11 +75,8 @@ case $key in
         SEARCH=yes
         shift
         ;;
-    # TODO: accept -name, -login etc
     searchid)
         SEARCHID=yes
-        USERNAME=$2
-        shift
         shift
         ;;
     -list) echo "add search searchid help"
@@ -235,16 +232,47 @@ then
     fi
 else
     if [ "$SEARCHID" = "yes" ];
+       # defaut glapi users command: list users, we iterate on pages
     then
-         if [ "$USERNAME" != "" ];
-         then
-             echo $(findUserId $USERNAME)
-         else echo "Error: empty username"
-              exit 1
-         fi
-    else
-        echo no command found
-        echo $USAGE
-        exit 1
+        if [ "$USERNAME" != "" ];
+        then
+            if [ "$EXACTNAME" = "yes" ];
+            then
+                iterpages $PAGES | jq --arg USERNAME \
+                                      "$USERNAME" '.[] | select(.name==$USERNAME)' | jq '.id';
+            else # regexp case insensitive
+                iterpages $PAGES | jq --arg USERNAME \
+                                      "$USERNAME" '.[] | select(.name | test($USERNAME;"i"))' | jq '.id';
+            fi
+        else if [ "$USERID" != "" ];
+             then # --argjson here --arg build a string
+                 iterpages $PAGES | jq --argjson USERID $USERID '.[] | select(.id==$USERID)' | jq '.id';
+                 
+             else if [ "$GROUP" = "" ];
+                  then 
+                      COMMAND=iterpages
+                  else
+                      COMMAND="showuserfromgrouppage $GROUP"
+                  fi
+                  $COMMAND $PAGES | jq '.id'
+                  exit 0;
+             fi
+        fi
     fi
 fi
+
+# 
+    # if [ "$SEARCHID" = "yes" ];
+    # then
+         # if [ "$USERNAME" != "" ];
+         # then
+             # echo $(findUserId $USERNAME)
+         # else echo "Error: empty username"
+              # exit 1
+         # fi
+    # else
+        # echo no command found
+        # echo $USAGE
+        # exit 1
+    # fi
+# 

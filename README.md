@@ -67,3 +67,32 @@ glapi users -h
 glapi users search -group foo
 glapi users search -name foo
 ```
+
+# bash completion
+
+Add this to you .bashrc to have command and sub-command completion.:
+
+```
+function _complete_glapi (){
+
+    local suggestions=
+    if [[ ("$COMP_CWORD" == 2 ) && ("${COMP_WORDS[1]}" == "groups" ) ]];
+    then
+        suggestions=($(compgen -W "$(glapi groups -list)" -- "${COMP_WORDS[2]}"))
+    elif [[ ("$COMP_CWORD" == 2 ) && ("${COMP_WORDS[1]}" == "users" ) ]];
+    then
+        suggestions=($(compgen -W "$(glapi users -list)" -- "${COMP_WORDS[2]}"))
+    elif [[ ("$COMP_CWORD" == 2 ) && ("${COMP_WORDS[1]}" == "projects" ) ]];
+    then
+        suggestions=($(compgen -W "$(glapi projects -list)" -- "${COMP_WORDS[2]}"))
+    elif [[ ("$COMP_CWORD" == 1 ) ]];
+    then
+        suggestions=($(compgen -W "$(glapi -list)" -- "${COMP_WORDS[1]}"))
+    else
+        return
+    fi
+    COMPREPLY=("${suggestions[@]}")
+}
+
+complete -F _complete_glapi  glapi
+```
