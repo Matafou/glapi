@@ -25,20 +25,24 @@ PROJECTID=
 
 USAGE="
 SYNTAX:
-[GLAPITOKEN=<token> GLAPISERVER=<url>] glapi-projects.sh [options] command
-glapi projects [options] command
-(see glapi-env.sh to use this second syntax)
+  [GLAPITOKEN=<token> GLAPISERVER=<url>] glapi-projects.sh [options] command
+ALTERNATE SYNTAX (see glapi-env.sh to use this second syntax):
+  glapi projects [options] command
+
 
 COMMANDS:
-- create <projname> <projgroupID>
-- adduser <userID> <projectnameID>
-- search <options for search>
+- create <projname> <projgroupID>       create a project
+- adduser <userID> <projectnameID>      add a user to a project
+- search <options for search>           search projects
+- listmembers <options for search>      search a project and list it members
+                                        project must be unique
+- help                                  show help
 
 OPTIONS:
-  -h show help
-  -v verbose mode
-  -n dry run, show the curl query, do not execute it. NOT APPLICABLE
-     TO SEARCH command
+  -h or --help             show help
+  -v                       verbose mode
+  -n                       dry run, show the curl query, do not execute it.
+                           NOT APPLICABLE TO SEARCH command.
 
 OPTIONS FOR SEARCH:
   -name <name>
@@ -89,6 +93,14 @@ case $key in
         LISTMEMBERS=yes
         shift
         ;;
+    -list) # bash_complete-friendly list of command names
+        echo "create adduser adduserbyname search searchid listmembers help"
+        exit 0
+        ;;
+    -h|--help|help)
+        echo "$USAGE"
+        exit
+    ;;
     *)    # unknown option
         POSITIONAL+=("$1") # save it in an array for later
         shift # past argument
@@ -148,10 +160,6 @@ case $key in
         DRYRUN=yes
         shift # past argument
         ;;
-    -h)
-        echo "$USAGE"
-        exit
-    ;;
     -*)
         echo unknown option "$key"
         exit 1;;

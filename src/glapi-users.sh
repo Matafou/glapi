@@ -30,12 +30,13 @@ COMMANDS:
 - add <username> <userlogin> <usermail> <passwd>
 - search <options for search> echoes information about users
 - searchid <loginname>  echoes the id of user with login <loginname>
+- help  show help
 
 OPTIONS:
-  -h show help
-  -v verbose mode
-  -n dry run, show the curl query, do not execute it. NOT APPLICABLE
-     TO SEARCH command
+  -h of --help  show help
+  -v            verbose mode
+  -n            dry run, show the curl query, do not execute it.
+                NOT APPLICABLE TO SEARCH command.
 
 OPTIONS FOR SEARCH:
   -name <name>
@@ -80,6 +81,9 @@ case $key in
         USERNAME=$2
         shift
         shift
+        ;;
+    -list) echo "add search searchid help"
+        exit 0
         ;;
     *) # not a command, we delay interpretation.
         POSITIONAL+=("$1") # save it in an array for later
@@ -155,7 +159,7 @@ case $key in
         DRYRUN=yes
         shift # past argument
         ;;
-    -h)
+    -h|--help|help)
         echo "$USAGE"
         exit
     ;;

@@ -20,6 +20,7 @@ USERID=
 USAGE="
 SYNTAX:
 [GLAPITOKEN=<token> GLAPISERVER=<url>] glapi-groups.sh [options] command
+SIMPLER SYNTAX:
 glapi groups [options] command
 (see glapi-env.sh to use this second syntax)
 
@@ -27,13 +28,16 @@ COMMANDS:
 
 - search <options for search> prints the json description of the
                               corresponding groups
-
+- searchid <id> -name \"name\"  prints the id of the group named exactly
+                              \"name\"  
 - adduser <id> <groupname>   adds user with id <id> in group <groupname>
-- adduserbyname <userlogin> -name <groupname>   adds user with login name <userlogin>
-    in group <groupname>
+- adduserbyname <userlogin> -name <groupname>   
+                             adds user with login name <userlogin> in group
+                             <groupname>
+- help                       show help
 
 OPTIONS:
-  -h show help
+  -h or --help show help
 
 OPTIONS FOR SEARCH:
   -name <name> look for the name <name>
@@ -75,6 +79,14 @@ case $key in
         shift
         shift
         ;;
+    -list) # bash_complete-friendly list of command names
+        echo "search searchid adduser adduserbyname help"
+        exit 0
+        ;;
+    -h|--help|help)
+        echo "$USAGE"
+        exit
+    ;;
     *)    # unknown option
         POSITIONAL+=("$1") # save it in an array for later
         shift # past argument
@@ -115,10 +127,6 @@ case $key in
         DRYRUN=yes
         shift # past argument
         ;;
-    -h)
-        echo "$USAGE"
-        exit
-    ;;
     -*)
         echo unknown option "$key"
         exit 1;;
