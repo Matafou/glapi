@@ -30,7 +30,7 @@ COMMANDS:
                               corresponding groups
 - searchid <id> -name \"name\"  prints the id of the group named exactly
                               \"name\"  
-- adduser <id> <groupname>   adds user with id <id> in group <groupname>
+- adduser <id> -name \"groupname\" adds user with id <id> in group <groupname>
 - adduserbyname <userlogin> -name <groupname>   
                              adds user with login name <userlogin> in group
                              <groupname>
@@ -170,7 +170,6 @@ fi
 
 if [ "$SEARCHID" = "yes" ];
 then
-    echo groupname = $GROUPNAME
     if [ "$GROUPNAME" != "" ];
     then
         echo $(findGroupId $GROUPNAME)
@@ -186,7 +185,7 @@ then
     then
         if [ "$EXACTNAME" = "yes" ];
         then
-            iterpages $PAGES | jq --arg GROUPNAME \
+            itergroupspages $PAGES | jq --arg GROUPNAME \
                                   "$GROUPNAME" '.[] | select(.name==$GROUPNAME)';
         else # regexp case insensitive
             itergroupspages $PAGES | jq --arg GROUPNAME "$GROUPNAME" '.[] | select(.name | test($GROUPNAME;"i"))';
@@ -212,9 +211,9 @@ then
     then
         if [[ "$USERID" == "" && "$USERNAME" != "" ]]
         then
-            USERID=$(findUserId $USERNAME)
+            USERID=$(DRYRUN="" findUserId $USERNAME)
         fi
-        echo -n "About to add user $USERID in group $GROUPNAME with access level 30. "
+        echo -n "About to add user $USERNAME (id=[$USERID]) in group $GROUPNAME with access level 30. "
         if confirm ;
         then addMemberToGroupById $USERID $GROUPNAME
         else 
@@ -222,8 +221,15 @@ then
             exit;
         fi
     else
-        echo ERROR: empty group name
-        exit 1;
+        if [ "$GROUPID" == "" ];
+        then
+           echo ERROR: empty group name or ID
+           exit 1
+        else
+            echo "About to add user $USERID in group $GROUPID with access level 30. "
+            echo "adding by group ID is not yet implemented. Use -name <the exact name of the group> instead."
+            exit 1
+        fi
     fi
 fi
 echo

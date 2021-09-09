@@ -14,7 +14,7 @@ function callcurl () {
         # echo "curl -v --header \"PRIVATE-TOKEN: $GLAPITOKEN\" $*" ;
     fi
     if [ "$DRYRUN" = "" ] ;    
-    then curl -v --header "PRIVATE-TOKEN: $GLAPITOKEN" $*
+    then curl -v --header "PRIVATE-TOKEN: $GLAPITOKEN" "$*"
     fi
 }
 
@@ -26,7 +26,7 @@ function callcurlsilent () {
         echo;
     fi
     if [ "$DRYRUN" = "" ] ;    
-    then curl -s --header "PRIVATE-TOKEN: $GLAPITOKEN" $*
+    then curl -s --header "PRIVATE-TOKEN: $GLAPITOKEN" "$*"
     fi
 }
 

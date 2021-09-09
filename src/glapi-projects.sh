@@ -32,8 +32,11 @@ ALTERNATE SYNTAX (see glapi-env.sh to use this second syntax):
 
 COMMANDS:
 - create <projname> <projgroupID>       create a project
-- adduser <userID> <projectnameID>      add a user to a project
+- adduser <userID> <project name>      add a user to a project
+- adduserbyname <user name> <project name>      add a user to a project
 - search <options for search>           search projects
+- searchid <options for search>         Implies -exact. Search projects and
+                                        display its id.
 - listmembers <options for search>      search a project and list it members
                                         project must be unique
 - help                                  show help
@@ -187,11 +190,12 @@ function createProject () {
     callcurl -X POST "$GLAPISERVER/projects?name=$PROJ_NAME&namespace_id=$GROUPID"
 }
 
+# level 30 = developper
 function addMemberToProjectById () {
     USERID="$1"
     PROJECTNAME="$2"
     PROJECTID=$(DRYRUN="" findProjectId $PROJECTNAME)
-    callcurl --request POST --data "user_id=$USERID&access_level=40" "$GLAPISERVER/projects/$PROJECTID/members" 2>&1
+    callcurl --request POST --data "user_id=$USERID&access_level=30" "$GLAPISERVER/projects/$PROJECTID/members" 2>&1
 }
 
 function addMemberToProjectByName () {
@@ -253,7 +257,7 @@ if [ "$SEARCHID" != "" ] ;
 then
     if [ "$PROJECTNAME" != "" ] ;
     then
-        echo $(findProjectId $PROJECTNAME)
+        echo $(DRYRUN="" findProjectId $PROJECTNAME)
         exit;
     else
         echo empty project name

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# FIXME: careful: this internal name of json's username is
+#userlogin, and the one of json's "name" is "username"
+
 BINDIRECTORY=$(cd `dirname $0` && pwd)
 
 # This variable is known and used by callcurl and callcurlsilent it is
@@ -41,8 +44,10 @@ OPTIONS:
 OPTIONS FOR SEARCH:
   -name <name>
   -id <id>
+  -login <username>
   -exact the search will be an exact search instead of regexp case
          insensitive matching.
+  -group <name> search in group exactly named <name>
 
 EXAMPLE:
   glapi users -h
@@ -174,6 +179,12 @@ set -- "${POSITIONAL[@]}" # restore positional parameters (i.e.
                           # parameters that were not recognized by the
                           # previous code.)
 
+if [ "$DRYRUN" != "" -a "$SEARCH" = "yes" ] ;
+then
+    echo "ERROR: the -n option (dryrun) is not applicable to search commands"
+    exit 1 ;
+fi
+
 # Here we should have shifted the arguments that should not be passed to curl
 OTHEROPTIONS=$*
 # TODO: check for unkniwn option
@@ -217,17 +228,21 @@ then
                                   "$USERNAME" '.[] | select(.name | test($USERNAME;"i"))';
         fi
     else if [ "$USERID" != "" ];
-         then # --argjson here --arg build a string
+         then # --argjson here, because --arg builds a string
              iterpages $PAGES | jq --argjson USERID $USERID '.[] | select(.id==$USERID)';
-             
-         else if [ "$GROUP" = "" ];
-              then 
-                  COMMAND=iterpages
-              else
-                  COMMAND="showuserfromgrouppage $GROUP"
+
+         else if [ "$USERLOGIN" != "" ];
+              then
+                  iterpages $PAGES | jq --arg USERLOGIN $USERLOGIN '.[] | select(.username==$USERLOGIN)' ;
+              else if [ "$GROUP" = "" ];
+                   then 
+                       COMMAND="iterpages $PAGES"
+                   else
+                       COMMAND="showuserfromgrouppage $GROUP $PAGES"
+                   fi
+                   $COMMAND
+                   exit 0;
               fi
-              $COMMAND $PAGES
-              exit 0;
          fi
     fi
 else
@@ -245,17 +260,21 @@ else
                                       "$USERNAME" '.[] | select(.name | test($USERNAME;"i"))' | jq '.id';
             fi
         else if [ "$USERID" != "" ];
-             then # --argjson here --arg build a string
+             then # --argjson here because --arg builds a string
                  iterpages $PAGES | jq --argjson USERID $USERID '.[] | select(.id==$USERID)' | jq '.id';
                  
-             else if [ "$GROUP" = "" ];
-                  then 
-                      COMMAND=iterpages
-                  else
-                      COMMAND="showuserfromgrouppage $GROUP"
+             else if [ "$USERLOGIN" != "" ];
+                  then
+                      iterpages $PAGES | jq --arg USERLOGIN $USERLOGIN '.[] | select(.username==$USERLOGIN)'  | jq '.id' ;
+                  else if [ "$GROUP" = "" ];
+                       then 
+                           COMMAND=iterpages
+                       else
+                           COMMAND="showuserfromgrouppage $GROUP"
+                       fi
+                       $COMMAND $PAGES | jq '.[].id'
+                       exit 0;
                   fi
-                  $COMMAND $PAGES | jq '.id'
-                  exit 0;
              fi
         fi
     fi

@@ -123,12 +123,22 @@ function iterate () {
     done | jq -c -s 'flatten'
 }
 
-# looks for the user id of username $1. The username must be exact.
-# FIXME: This is also defined in glapi-users.sh, which is bad.
+# looks for the user id of username $1. The username must be the exact
+# username (not the "name". FIXME: This is also defined in
+# glapi-users.sh, which is bad.
 function findUserId () {
     # $1: username
     # result: userid 
     iterpages $PAGES | jq --arg USERNAME $1 '.[] | select(.username==$USERNAME)' | jq '.id'
+}
+
+# looks for the user id of name $1. The username must be the exact username, i.e. the login.
+# FIXME: This is also defined in glapi-users.sh, which is bad.
+
+function findUserIdByName () {
+    # $1: username
+    # result: userid 
+    iterpages $PAGES | jq --arg USERNAME $1 '.[] | select(.name==$USERNAME)' | jq '.id'
 }
 
 # looks for the user id of username $1. The username must be exact.
@@ -145,6 +155,7 @@ function findGroupId () {
 function findProjectId () {
     # $1: project name
     # result: projectid 
-    iterate $PAGES listProjectsInAll \
+    # more than 2000 projects already, PAGES is not accurate
+    iterate 100 listProjectsInAll \
         | jq --arg PROJECTNAME "$PROJECTNAME" '.[] | select(.name==$PROJECTNAME)' | jq '.id'
 }
