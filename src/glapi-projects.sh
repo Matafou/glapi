@@ -32,8 +32,8 @@ ALTERNATE SYNTAX (see glapi-env.sh to use this second syntax):
 
 COMMANDS:
 - create <projname> <projgroupID>       create a project
-- adduser <userID> <project name>      add a user to a project
-- adduserbyname <user name> <project name>      add a user to a project
+- adduser <userID> <exact project name>      add a user to a project
+- adduserbyname <username> <exact project name>      add a user to a project by its username
 - search <options for search>           search projects
 - searchid <options for search>         Implies -exact. Search projects and
                                         display its id.
@@ -52,6 +52,13 @@ OPTIONS FOR SEARCH:
   -id <id>
   -exact the search will be an exact search instead of regexp case
          insensitive matching.
+
+EXAMPLE:
+  # obtain all project whose name matches fip1_tp3, and then filter
+  # those created in 2019 sept.
+
+glapi projects search -name \"fip1_tp3\"  | jq -r '. | select(.created_at | test(\"2016\";\"i\")) | .name'
+
 "
 
 POSITIONAL=()
@@ -198,11 +205,11 @@ function addMemberToProjectById () {
     callcurl --request POST --data "user_id=$USERID&access_level=30" "$GLAPISERVER/projects/$PROJECTID/members" 2>&1
 }
 
-function addMemberToProjectByName () {
+function addMemberToProjectByUsername () {
     THEUSERNAME="$1"
     PROJECTNAME="$2"
     # cancel dryrun just for this search, so that we get a good id
-    THEUSERID=$(DRYRUN="" findUserId $1)
+    THEUSERID=$(DRYRUN="" findUserIdByUsername $1)
     addMemberToProjectById $THEUSERID $PROJECTNAME
 }
 
@@ -242,7 +249,7 @@ fi
 # is not correct
 if [ "$ADDUSERBYNAME" != "" ] ;
 then
-    addMemberToProjectByName $USERNAME $PROJECTNAME ;
+    addMemberToProjectByUsername $USERNAME $PROJECTNAME ;
     exit
 fi
 

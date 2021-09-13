@@ -126,7 +126,7 @@ function iterate () {
 # looks for the user id of username $1. The username must be the exact
 # username (not the "name". FIXME: This is also defined in
 # glapi-users.sh, which is bad.
-function findUserId () {
+function findUserIdByUsername () {
     # $1: username
     # result: userid 
     iterpages $PAGES | jq --arg USERNAME $1 '.[] | select(.username==$USERNAME)' | jq '.id'

@@ -157,7 +157,7 @@ function addMemberToGroupByName () {
     THEUSERNAME="$1"
     THEGROUPNAME="$2"
     # cancel dryrun just for this search, so that we get a good id
-    USERID=$(DRYRUN="" findUserId $1)
+    USERID=$(DRYRUN="" findUserIdByUsername $1)
     addMemberToGroupById $USERID $THEGROUPNAME
 }
 
@@ -211,7 +211,7 @@ then
     then
         if [[ "$USERID" == "" && "$USERNAME" != "" ]]
         then
-            USERID=$(DRYRUN="" findUserId $USERNAME)
+            USERID=$(DRYRUN="" findUserIdByUsername $USERNAME)
         fi
         echo -n "About to add user $USERNAME (id=[$USERID]) in group $GROUPNAME with access level 30. "
         if confirm ;
