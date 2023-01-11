@@ -36,7 +36,7 @@ set -- "${POSITIONAL[@]}" # restore positional parameters (i.e.
 
 
 function testserver () {
-    callcurl "$GLAPISERVER/users" --head 2<&1 | grep --quiet "Status\: 200 OK"
+    callcurl "$GLAPISERVER/users" --head 2>&1 | grep --quiet "Status: 200 OK"
     echo "$?"
 }
 
@@ -63,7 +63,7 @@ fi
 
 RETCODE=$(testserver)
 
-if [ $RETCODE = "0" ];
+if [ "$RETCODE" = "0" ];
 then
     if [ "$VERBOSE" = "yes" ];
     then 
@@ -77,7 +77,7 @@ else
     echo GLAPITOKEN = $GLAPITOKEN >&2 
     echo GLAPISERVER = $GLAPISERVER >&2 
     showshortlog 1>&2 
-    exit $RETCODE
+    exit 1
 fi
 
 

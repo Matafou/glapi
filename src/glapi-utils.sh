@@ -5,28 +5,36 @@
 # to call this without really sending the request:
 #   DRYRUN=yes addMemberToGroupById $USERID $GROUPNAME
 function callcurl () {
+    local cmd="curl -v --header \"PRIVATE-TOKEN: $GLAPITOKEN\""
+    # Putting quotes around arguments, so that the space-containing
+    # args remain as they are + verbose message can be copy-pasted
+    for t in $*
+    do
+        cmd+=" \"$t\""
+    done
     if [ "$VERBOSE" = "yes" -o "$DRYRUN" != "" ] ;
     then
-        echo -n "curl -v --header \"PRIVATE-TOKEN: $GLAPITOKEN\""
-        # Putting quotes around arguments, so that the command can be copy pasted
-        for t in $*; do echo -n " \"$t\""; done
-        echo
-        # echo "curl -v --header \"PRIVATE-TOKEN: $GLAPITOKEN\" $*" ;
+        echo "verbose: $cmd"
     fi
     if [ "$DRYRUN" = "" ] ;    
-    then curl -v --header "PRIVATE-TOKEN: $GLAPITOKEN" "$*"
+    then
+        eval $cmd
     fi
 }
 
 function callcurlsilent () {
-    if [ "$VERBOSE" = "yes" ]  || [ "$DRYRUN" != "" ] ;
+    local cmd="curl -s --header \"PRIVATE-TOKEN: $GLAPITOKEN\""
+    for t in $*
+    do
+        cmd+=" \"$t\""
+    done
+    if [ "$VERBOSE" = "yes" -o "$DRYRUN" != "" ] ;
     then
-        echo -n "curl -s --header \"PRIVATE-TOKEN: $GLAPITOKEN\""
-        for t in $*; do echo -n " \"$t\""; done
-        echo;
+        echo "verbose: $cmd"
     fi
     if [ "$DRYRUN" = "" ] ;    
-    then curl -s --header "PRIVATE-TOKEN: $GLAPITOKEN" "$*"
+    then
+        eval $cmd
     fi
 }
 
