@@ -14,7 +14,7 @@ function callcurl () {
     done
     if [ "$VERBOSE" = "yes" -o "$DRYRUN" != "" ] ;
     then
-        echo "verbose: $cmd"
+        >&2 echo "verbose: $cmd"
     fi
     if [ "$DRYRUN" = "" ] ;    
     then
@@ -30,7 +30,7 @@ function callcurlsilent () {
     done
     if [ "$VERBOSE" = "yes" -o "$DRYRUN" != "" ] ;
     then
-        echo "verbose: $cmd"
+        >&2 echo "verbose: $cmd"
     fi
     if [ "$DRYRUN" = "" ] ;    
     then
@@ -120,7 +120,7 @@ function gjq () {
 function confirm () {
     read -p "Are you sure? " -n 1 -r ANSWER
     echo  # (optional) move to a new line
-    echo " You answered $ANSWER"
+    >&2 echo " You answered $ANSWER"
     if [[ $ANSWER =~ ^[Yy]$ ]]
     then
         return 0

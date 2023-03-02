@@ -23,13 +23,16 @@ BINDIRECTORY=$(cd `dirname $0` && pwd)
 
 function showuserpage () {
     PAGE=$1
-    callcurlsilent "$GLAPISERVER/users?per_page=100&page=$PAGE"
+    # >&2 echo "callcurlsilent \"$GLAPISERVER/users?per_page=100&page=$PAGE\""
+    callcurlsilent "$GLAPISERVER/users?per_page=100&page=$PAGE"    
 }
 
 
 function showuserfromgrouppage () {
     PAGE=$2
     THEGROUP=$1
+    # >&2 echo "callcurlsilent \"$GLAPISERVER/groups/$THEGROUP/members?per_page=100&page=$PAGE\""
+    
     callcurlsilent "$GLAPISERVER/groups/$THEGROUP/members?per_page=100&page=$PAGE" | jq '.'
 }
 
@@ -43,7 +46,7 @@ function showgroupspage () {
 function listProjectsInGroup () {
     if [ -z $1 ];
     then
-        echo I need a group name
+        >&2 echo I need a group name
     else
         GROUP=$1
         PAGE=$2
@@ -61,6 +64,11 @@ function listProjectsInAll () {
 }
 
 
+function listProtectedBranch () {
+    PROJECTID=$1
+    callcurlsilent "$GLAPISERVER/projects/${PROJECTID}/protected_branches" | jq '.'
+}
+
 # Iter sur la liste de tous lesutilisateurs (dans la limite du nombre
 # de $PAGE pages de 100 users)
 function iterpages () {
@@ -68,7 +76,7 @@ function iterpages () {
     COMMAND=showuserpage
     for i in $(seq 1 $PAGE); do
         $COMMAND $i
-        echo
+        # >&2 echo "$COMMAND $i"
         # TODO: is there duplicates?
     done  | jq -s "flatten"
 }
@@ -117,7 +125,7 @@ function iterate () {
     COMMAND="$*" #all arguments but the first (shifted)
     for i in $(seq 1 $PAGE); do
         $COMMAND $i
-        echo
+        # echo " "
         # we flatten the different pages FIXME; there are repetitions
         # (only when listing groups, not users)
     done | jq -c -s 'flatten'
@@ -156,6 +164,6 @@ function findProjectId () {
     # $1: project name
     # result: projectid 
     # more than 2000 projects already, PAGES is not accurate
-    iterate 100 listProjectsInAll \
+    iterate 20 listProjectsInAll \
         | jq --arg PROJECTNAME "$PROJECTNAME" '.[] | select(.name==$PROJECTNAME)' | jq '.id'
 }

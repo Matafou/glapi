@@ -15,13 +15,12 @@ ADDUSER=
 USERID=
 LISTMEMBERS=
 SEARCH=
-LISTMEMBERS=
 EXACTNAME=
 GROUPID=
 GROUPNAME=
 PROJECTNAME=
 PROJECTID=
-
+PROTECTEDBRANCH=
 
 USAGE="
 SYNTAX:
@@ -39,6 +38,7 @@ COMMANDS:
                                         display its id.
 - listmembers <options for search>      search a project and list it members
                                         project must be unique
+- protectedbranch -id <project id>      list protected branches of project id (id mandatory)
 - help                                  show help
 
 OPTIONS:
@@ -48,6 +48,7 @@ OPTIONS:
                            NOT APPLICABLE TO SEARCH command.
 
 OPTIONS FOR SEARCH:
+  -group <name>  search often needs the groupe name otherwise some
   -name <name>
   -id <id>
   -exact the search will be an exact search instead of regexp case
@@ -101,6 +102,10 @@ case $key in
         ;;
     listmembers)
         LISTMEMBERS=yes
+        shift
+        ;;
+    protectedbranch)
+        PROTECTEDBRANCH=yes
         shift
         ;;
     -list) # bash_complete-friendly list of command names
@@ -267,7 +272,7 @@ then
         echo $(DRYRUN="" findProjectId $PROJECTNAME)
         exit;
     else
-        echo empty project name
+        >&2 echo empty project name
         exit 0
     fi
 fi
@@ -283,13 +288,31 @@ then
         if [ "$PROJECTID" != "" ] ;
         then
             echo $(listMembers $PROJECTID)
-            exit;
+            exit 0;
         else
-            echo empty project name
-            exit 0
+            >&2 echo empty project name
+            exit 1
         fi
     fi
 fi
+
+if [ "$PROTECTEDBRANCH" != "" ] 
+then
+    if [ "$PROJECTNAME" != "" ] ;
+    then
+        >&2 echo "protectedbranch needs a projetc id"
+        exit 1
+    else
+        if [ "$PROJECTID" != "" ] ;
+        then
+            listProtectedBranch $PROJECTID
+        else
+            >&2 echo empty project name
+            exit 1
+        fi
+    fi
+fi
+
 
 # when asking for the decription of a group, all projects of the group
 # are displayed, there is no page/per_page flag.
@@ -327,7 +350,7 @@ then
             exit;
         else # regexp case insensitive
             iterate $PAGES listProjectsInAll \
-                | jq  --arg PROJECTNAME "$PROJECTNAME" '.[] | select(.name | test($PROJECTNAME;"i"))';
+                | jq  --arg PROJECTNAME "$PROJECTNAME" '.[] | select(.name | test($PROJECTNAME;"i")?)';
             exit
         fi
     fi

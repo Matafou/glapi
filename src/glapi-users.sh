@@ -224,6 +224,7 @@ then
                iterpages $PAGES | jq --arg USERNAME \
                                      "$USERNAME" '.[] | select(.name==$USERNAME)';
         else # regexp case insensitive
+            # >&2 echo "iterpages $PAGES | jq --arg USERNAME \"$USERNAME\" '.[] | select(.name | test($USERNAME;\"i\"))' | jq '.id'"
             iterpages $PAGES | jq --arg USERNAME \
                                   "$USERNAME" '.[] | select(.name | test($USERNAME;"i"))';
         fi
@@ -238,7 +239,9 @@ then
                    then 
                        COMMAND="iterpages $PAGES"
                    else
-                       COMMAND="showuserfromgrouppage $GROUP $PAGES"
+                       # FIXME: We assume that there are not too much
+                       # users in the group, only one page.
+                       COMMAND="showuserfromgrouppage $GROUP 1"
                    fi
                    $COMMAND
                    exit 0;
@@ -256,6 +259,8 @@ else
                 iterpages $PAGES | jq --arg USERNAME \
                                       "$USERNAME" '.[] | select(.name==$USERNAME)' | jq '.id';
             else # regexp case insensitive
+                # >&2 echo "iterpages $PAGES | jq --arg USERNAME \"$USERNAME\" '.[] | select(.name | test($USERNAME;\"i\"))' | jq '.id'"
+
                 iterpages $PAGES | jq --arg USERNAME \
                                       "$USERNAME" '.[] | select(.name | test($USERNAME;"i"))' | jq '.id';
             fi

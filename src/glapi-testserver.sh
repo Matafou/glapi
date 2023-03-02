@@ -36,12 +36,14 @@ set -- "${POSITIONAL[@]}" # restore positional parameters (i.e.
 
 
 function testserver () {
-    callcurl "$GLAPISERVER/users" --head 2>&1 | grep --quiet "Status: 200 OK"
+    # v4 answers "HTTP/1.1 200 OK", whereas v3 answers "Status: 200 OK"
+    callcurl "$GLAPISERVER/users" --head 2>&1 | grep --quiet "200 OK"
     echo "$?"
 }
 
+
 function showshortlog () {
-    callcurl "$GLAPISERVER/users" --head 2<&1  | grep "Status\\|PRIVATE-TOKEN\\|http\\|host\\|Could not resolve"
+    callcurl "$GLAPISERVER/users" --head --include 2<&1  | grep "Status\\|PRIVATE-TOKEN\\|http\\|host\\|HTTP\\|Could not resolve"
 }
 
 
@@ -67,15 +69,15 @@ if [ "$RETCODE" = "0" ];
 then
     if [ "$VERBOSE" = "yes" ];
     then 
-        echo server and credentials seem OK;
-        echo GLAPITOKEN = $GLAPITOKEN >&2 
-        echo GLAPISERVER = $GLAPISERVER >&2 
+        >&2 echo server and credentials seem OK;
+        >&2 echo GLAPITOKEN = $GLAPITOKEN >&2 
+        >&2 echo GLAPISERVER = $GLAPISERVER >&2 
     fi
     exit 0;
 else
-    echo Ops! server and/or credentials seem wrong: >&2 
-    echo GLAPITOKEN = $GLAPITOKEN >&2 
-    echo GLAPISERVER = $GLAPISERVER >&2 
+    >&2 echo Ops! server and/or credentials seem wrong: >&2 
+    >&2 echo GLAPITOKEN = $GLAPITOKEN >&2 
+    >&2 echo GLAPISERVER = $GLAPISERVER >&2 
     showshortlog 1>&2 
     exit 1
 fi

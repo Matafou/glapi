@@ -2,7 +2,7 @@
 
 BINDIRECTORY=$(cd `dirname $0` && pwd)
 
-V3=
+API_VERSION="noversion"
 POSITIONAL=()
 while [[ $# -gt 0 ]]
 do
@@ -10,7 +10,11 @@ key="$1"
 
 case $key in
     -v3)
-        V3=yes
+        API_VERSION=3
+        shift # past argument
+        ;;
+    -v4)
+        API_VERSION=4
         shift # past argument
         ;;
     *)    # unknown option
@@ -27,8 +31,15 @@ set -- "${POSITIONAL[@]}" # restore positional parameters (i.e.
 
 TOKEN=$1
 URL=$2
-if [ "$V3" = "yes" ];
+if [ "$API_VERSION" = "3" ];
 then URL="$2/api/v3"; # FIXME, remove trialing '/' to URL
+else
+    if [ "$API_VERSION" = "4" ];
+    then URL="$2/api/v4"; # FIXME, remove trialing '/' to URL
+    else
+        echo "No API version specified, exiting." 1>&2 
+        exit 1
+    fi
 fi
 
 # No quotes here so that $1 and $2 get evaluated

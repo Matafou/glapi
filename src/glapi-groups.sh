@@ -16,6 +16,7 @@ EXACTNAME=
 
 ADDTOGROUP=
 USERID=
+LEVEL=
 
 USAGE="
 SYNTAX:
@@ -30,7 +31,7 @@ COMMANDS:
                               corresponding groups
 - searchid <id> -name \"name\"  prints the id of the group named exactly
                               \"name\"  
-- adduser <id> -name \"groupname\" adds user with id <id> in group <groupname>
+- adduser <id> -name \"groupname\"  <options for adduser>   adds user with id <id> in group <groupname>
 - adduserbyname <userlogin> -name <groupname>   
                              adds user with login name <userlogin> in group
                              <groupname>
@@ -44,6 +45,9 @@ OPTIONS FOR SEARCH:
   -id <id>     look fir the id <id>
   -exact the search will be an exact search instead of regexp case
          insensitive matching.
+
+OPTIONS FOR ADDUSER:
+  -lvl <int>  the user is added with this access level (10: guest, ... 30 is the default)
 
 EXAMPLES:
    adduserbyname foo -name group_bar
@@ -75,7 +79,7 @@ case $key in
         ;;
     adduserbyname)
         ADDTOGROUP=yes
-        USERNAME="$2"
+        USER_NAME="$2"
         shift
         shift
         ;;
@@ -110,12 +114,17 @@ case $key in
         shift # past value
         ;;
     -name)
-        GROUPNAME="$2";
+        GROUPNAME="$2"
         shift
         shift
         ;;
     -id)
-        GROUPID="$2";
+        GROUPID="$2"
+        shift
+        shift
+        ;;
+    -lvl)
+        LEVEL="$2"
         shift
         shift
         ;;
@@ -150,15 +159,22 @@ OTHEROPTIONS=$*
 function addMemberToGroupById () {
     THEUSERID="$1"
     THEGROUPNAME="$2"
-    callcurlsilent --request POST --data "user_id=$THEUSERID&access_level=30" "$GLAPISERVER/groups/$THEGROUPNAME/members" 2>&1
+    THELEVEL="$3"
+    if [ "$THELEVEL" == "" ]
+    then
+        THELEVEL=30
+    fi
+    callcurlsilent --request POST --data "user_id=$THEUSERID&access_level=$THELEVEL" "$GLAPISERVER/groups/$THEGROUPNAME/members" 2>&1
 }
+
 
 function addMemberToGroupByName () {
     THEUSERNAME="$1"
     THEGROUPNAME="$2"
+    THELEVEL="$3"
     # cancel dryrun just for this search, so that we get a good id
     USERID=$(DRYRUN="" findUserIdByUsername $1)
-    addMemberToGroupById $USERID $THEGROUPNAME
+    addMemberToGroupById $USERID $THEGROUPNAME $THELEVEL
 }
 
 
@@ -209,13 +225,13 @@ if [ "$ADDTOGROUP" = "yes" ] ;
 then
     if [ "$GROUPNAME" != "" ];
     then
-        if [[ "$USERID" == "" && "$USERNAME" != "" ]]
+        if [[ "$USERID" == "" && "$USER_NAME" != "" ]]
         then
-            USERID=$(DRYRUN="" findUserIdByUsername $USERNAME)
+            USERID=$(DRYRUN="" findUserIdByUsername $USER_NAME)
         fi
-        echo -n "About to add user $USERNAME (id=[$USERID]) in group $GROUPNAME with access level 30. "
+        echo -n "About to add user $USER_NAME (id=[$USERID]) in group $GROUPNAME with access level $LEVEL. "
         if confirm ;
-        then addMemberToGroupById $USERID $GROUPNAME
+        then addMemberToGroupById $USERID $GROUPNAME $LEVEL
         else 
             echo aborting
             exit;
