@@ -66,7 +66,7 @@ function listProjectsInAll () {
 
 function listProtectedBranch () {
     PROJECTID=$1
-    callcurlsilent "$GLAPISERVER/projects/${PROJECTID}/protected_branches" | jq '.'
+    callcurlsilent "$GLAPISERVER/projects/${PROJECTID}/protected_branches"
 }
 
 # Iter sur la liste de tous lesutilisateurs (dans la limite du nombre
