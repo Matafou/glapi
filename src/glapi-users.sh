@@ -225,8 +225,16 @@ then
                                      "$USERNAME" '.[] | select(.name==$USERNAME)';
         else # regexp case insensitive
             # >&2 echo "iterpages $PAGES | jq --arg USERNAME \"$USERNAME\" '.[] | select(.name | test($USERNAME;\"i\"))' | jq '.id'"
-            iterpages $PAGES | jq --arg USERNAME \
-                                  "$USERNAME" '.[] | select(.name | test($USERNAME;"i"))';
+            if [ "$GROUP" = "" ]
+            then
+                iterpages $PAGES | jq --arg USERNAME \
+                                      "$USERNAME" '.[] | select(.name | test($USERNAME;"i"))'
+            else
+                # FIXME: We assume that there are not too much
+                # users in the group, only one page.
+                showuserfromgrouppage $GROUP 1 | jq --arg USERNAME \
+                                                    "$USERNAME" '.[] | select(.name | test($USERNAME;"i"))'
+            fi
         fi
     else if [ "$USERID" != "" ];
          then # --argjson here, because --arg builds a string
