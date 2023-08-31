@@ -9,6 +9,7 @@ PRINTIDS=
 PAGES=9
 
 ADDPROJECT=
+FORKPROJECT=
 PROJECTNAME=
 
 ADDUSER=
@@ -31,6 +32,7 @@ ALTERNATE SYNTAX (see glapi-env.sh to use this second syntax):
 
 COMMANDS:
 - create <projname> <projgroupID>       create a project
+- fork <initialprojid> <projname> <projgroupID>       create a project by forking another
 - adduser <userID> <exact project name>      add a user to a project
 - adduserbyname <username> <exact project name>      add a user to a project by its username
 - search <options for search>           search projects
@@ -59,7 +61,8 @@ EXAMPLE:
   # those created in 2019 sept.
 
 glapi projects search -name \"fip1_tp3\"  | jq -r '. | select(.created_at | test(\"2016\";\"i\")) | .name'
-
+# fork project 302 into group 525
+glapi projects fork 302 testproj 525
 "
 
 POSITIONAL=()
@@ -70,6 +73,16 @@ key="$1"
 case $key in
     create)
         ADDPROJECT=yes
+        shift
+        PROJECTNAME="$1"
+        shift
+        PROJECTGROUPID="$1"
+        shift
+        ;;
+    fork) # todo: faire du projectgroupid un arg optionnel
+        FORKPROJECT=yes
+        shift
+        PROJECTID="$1"
         shift
         PROJECTNAME="$1"
         shift
@@ -109,7 +122,7 @@ case $key in
         shift
         ;;
     -list) # bash_complete-friendly list of command names
-        echo "create adduser adduserbyname search searchid listmembers help"
+        echo "create fork adduser adduserbyname search searchid listmembers protectedbranch help"
         exit 0
         ;;
     -h|--help|help)
@@ -199,7 +212,21 @@ function createProject () {
     PROJ_NAME=$1
     GROUPID=$2
     # 2>&1 | grep "Status:"
-    callcurl -X POST "$GLAPISERVER/projects?name=$PROJ_NAME&namespace_id=$GROUPID"
+    callcurl -X POST "$GLAPISERVER/projects/:id/fork?name=$PROJ_NAME&namespace_id=$GROUPID"
+}
+
+# fork an existing project of id $1 inside group having groupID $3
+# (numerical id) the name is $2, and it is also the path of the forked
+# project afterward. It seemshowever that the fork is first done with
+# the path of the original projet and then repathed, this may give
+# errors (path already taken) if there already exists a project with
+# this path.
+function forkProject () {
+    INITIALPROJ_NAME=$1
+    PROJ_NAME=$2
+    GROUPID=$3
+    # 2>&1 | grep "Status:"
+    callcurl -X POST "$GLAPISERVER/projects/$INITIALPROJ_NAME/fork?name=$PROJ_NAME&namespace_id=$GROUPID&path=$PROJ_NAME"
 }
 
 # level 30 = developper
@@ -240,6 +267,12 @@ fi
 if [ "$ADDPROJECT" != "" ] ;
 then
     createProject $PROJECTNAME $PROJECTGROUPID ;
+    exit
+fi
+
+if [ "$FORKPROJECT" != "" ] ;
+then
+    forkProject $PROJECTID $PROJECTNAME $PROJECTGROUPID ;
     exit
 fi
 
