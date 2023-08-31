@@ -229,6 +229,11 @@ then
         then
             USERID=$(DRYRUN="" findUserIdByUsername $USER_NAME)
         fi
+        if [[ "$USERID" == "" ]]
+        then
+            echo "No user with login $USER_NAME found."
+            exit 1
+        fi
         echo -n "About to add user $USER_NAME (id=[$USERID]) in group $GROUPNAME with access level $LEVEL. "
         if confirm ;
         then addMemberToGroupById $USERID $GROUPNAME $LEVEL
