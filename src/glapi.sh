@@ -33,7 +33,7 @@ EXCLUDED_COMMANDS="glapi-util\\|glapi-testserver\\|glapi-functions\\|glapi-env"
 # exept the utilitary files
 function list_commands () {
     DIR="$( dirname ${BASH_SOURCE[0]} )"
-    RES=$(ls $DIR | grep "glapi-.*\.sh" | grep -v "$EXCLUDED_COMMANDS"| sed -e "s/glapi-//"| sed -e "s/\.sh//")
+    RES=$(ls $DIR | grep "glapi-.*\.sh" | grep -v "$EXCLUDED_COMMANDS" | sed -e "s/glapi-//"| sed -e "s/\.sh//")
     echo $RES
 }
 
