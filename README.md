@@ -23,14 +23,14 @@ glapi.sh command
 ## USING the `glapi` alias:
 ### First define the alias!
 ```bash
-alias glapi='GLAPITOKEN=yourtoken GLAPISERVER=serveraddress/api/v3 glapi.sh'
+alias glapi='GLAPITOKEN=yourtoken GLAPISERVER=serveraddress/api/v4 glapi.sh'
 ```
 
 This part can be done using the glapi-env.sh script, for instance like this
 ```bash
-eval $(~/src/glapi/glapi-env.sh -v3 "XYZKLKFZELMFJSDL" "https://gitlab...."
+eval $(~/src/glapi/glapi-env.sh -v4 "XYZKLKFZELMFJSDL" "https://gitlab...."
 ```
-(-v3 is the only version of gitlab api currently supported)
+(-v4 is currently the supported version of gitlab api. v3 may still work)
 
 Note that this way you don't need to add `~/src/glapi/` to your path
 provided that gmapi-env.sh is in the same directory thant the other
