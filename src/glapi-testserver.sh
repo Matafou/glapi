@@ -37,7 +37,7 @@ set -- "${POSITIONAL[@]}" # restore positional parameters (i.e.
 
 function testserver () {
     # v4 answers "HTTP/1.1 200 OK", whereas v3 answers "Status: 200 OK"
-    callcurl "$GLAPISERVER/users" --head 2>&1 | grep --quiet "200 OK"
+    callcurl "$GLAPISERVER/users" --head 2>&1 | grep --quiet "200 OK\\|HTTP/2 200"
     echo "$?"
 }
 
