@@ -17,29 +17,29 @@ BINDIRECTORY=$(cd `dirname $0` && pwd)
 # utilisateurs.
 # TODO: calculer les nombre de pages nécessaire
 # FIXME: gitlab v3 ne retourne pas de bon header quand on fait
-# curl --head  --header "PRIVATE-TOKEN: $GLAPITOKEN" "$GLAPISERVER/users?per_page=100&page=1
+# curl --head  --header "PRIVATE-TOKEN: $GLAPITOKEN" "$GLAPISERVER/users?per_page=70&page=1
 # donc pour l'instant on fait 9 pages et ça suffit largement
 # (septembre 2019 il t a 400 utilisateurs et des poussières.
 
 function showuserpage () {
     PAGE=$1
-    # >&2 echo "callcurlsilent \"$GLAPISERVER/users?per_page=100&page=$PAGE\""
-    callcurlsilent "$GLAPISERVER/users?per_page=100&page=$PAGE"    
+    # >&2 echo "callcurlsilent \"$GLAPISERVER/users?per_page=70&page=$PAGE\""
+    callcurlsilent "$GLAPISERVER/users?per_page=70&page=$PAGE"    
 }
 
 
 function showuserfromgrouppage () {
     PAGE=$2
     THEGROUP=$1
-    # >&2 echo "callcurlsilent \"$GLAPISERVER/groups/$THEGROUP/members?per_page=100&page=$PAGE\""
+    # >&2 echo "callcurlsilent \"$GLAPISERVER/groups/$THEGROUP/members?per_page=70&page=$PAGE\""
     
-    callcurlsilent "$GLAPISERVER/groups/$THEGROUP/members?per_page=100&page=$PAGE" | jq '.'
+    callcurlsilent "$GLAPISERVER/groups/$THEGROUP/members?per_page=70&page=$PAGE" | jq '.'
 }
 
 
 function showgroupspage () {
     PAGE=$1
-    callcurlsilent "$GLAPISERVER/groups?per_page=100&page=$PAGE"
+    callcurlsilent "$GLAPISERVER/groups?per_page=70&page=$PAGE"
 }
 
 
@@ -60,7 +60,7 @@ function listProjectsInGroup () {
 function listProjectsInAll () {
     PAGE=$1
     shift
-    callcurlsilent "$GLAPISERVER/projects?page=$PAGE&per_page=100"
+    callcurlsilent "$GLAPISERVER/projects?page=$PAGE&per_page=70"
 }
 
 
@@ -70,7 +70,7 @@ function listProtectedBranch () {
 }
 
 # Iter sur la liste de tous lesutilisateurs (dans la limite du nombre
-# de $PAGE pages de 100 users)
+# de $PAGE pages de 70 users)
 function iterpages () {
     PAGE=$1
     COMMAND=showuserpage
